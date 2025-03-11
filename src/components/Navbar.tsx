@@ -16,7 +16,7 @@ export default function Navbar() {
   return (
     <div ref={navbarRef} className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
-        <h1 className="text-2xl font-bold text-gray-900">MyDocSite</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Quic-send</h1>
         <nav className="hidden md:flex gap-6">
           <a href="#" className="text-gray-700 hover:text-black transition">Docs</a>
           <a href="#" className="text-gray-700 hover:text-black transition">Pricing</a>
