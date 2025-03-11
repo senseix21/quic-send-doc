@@ -3,6 +3,29 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { Button } from "@/components/ui/button";
 
+
+const AnimatedSVG = () => {
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    gsap.to(svgRef.current, {
+      duration: 2,
+      x: 100,
+      xPercent: -100,
+      attr: {
+        fill: "#8d3dae",
+        rx: 50,
+      },
+    });
+  }, []);
+
+  return (
+    <svg width="200" height="100" viewBox="0 0 100 50">
+      <rect ref={svgRef} className="svgBox" width="50" height="50" fill="red" rx="5" />
+    </svg>
+  );
+};
+
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +61,7 @@ export default function Hero() {
       <p className="mt-4 text-lg text-gray-600 max-w-lg">
         The fastest way to document and share your software package with the world.
       </p>
+      <AnimatedSVG/>
       <Button className="mt-6 px-6 py-3 text-lg">Get Started</Button>
     </section>
   );
