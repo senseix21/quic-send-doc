@@ -1,57 +1,96 @@
 "use client";
-import React, { useRef } from "react";
+
+import React, { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { TextPlugin } from "gsap/TextPlugin";
+import { CSSPlugin } from "gsap/CSSPlugin";
 
-gsap.registerPlugin(); // ❌ No need to register `useGSAP`, it's a React hook.
+gsap.registerPlugin(TextPlugin, CSSPlugin);
 
-export default function Boxes() {
-  const container = useRef<HTMLDivElement | null>(null);
+export default function AnimatedShapes() {
+  const svgRect = useRef<SVGRectElement | null>(null);
+  const divRect = useRef<HTMLDivElement | null>(null);
+  const messageRef = useRef<HTMLHeadingElement | null>(null);
+  const [progress, setProgress] = useState(0);
   const tl = useRef<gsap.core.Timeline | null>(null);
 
-  const toggleTimeline = () => {
+  useGSAP(() => {
+    if (!svgRect.current || !divRect.current || !messageRef.current) return;
+    const elements = [svgRect.current, divRect.current];
+    
+    tl.current = gsap.timeline({
+      onUpdate: () => setProgress(tl.current?.progress() || 0),
+      defaults: { duration: 1 },
+    });
+
+    tl.current
+      .set(messageRef.current, { text: '{rotation:360, transformOrigin:"50% 50%"}' })
+      .to(elements, { rotation: 360, transformOrigin: "50% 50%" }, "+=1")
+      .set(messageRef.current, { text: '{scale:0, transformOrigin:"0px 0px"}' }, "+=1")
+      .to(elements, { scale: 0, transformOrigin: "0px 0px" })
+      .set(messageRef.current, { text: '{scale:1, transformOrigin:"100% 0%"}' }, "+=1")
+      .to(elements, { scale: 1, transformOrigin: "100% 0%" });
+
+    tl.current.pause();
+  }, []);
+
+  const handlePlay = () => {
     if (tl.current) {
-      tl.current.reversed(!tl.current.reversed());
+      if (tl.current.progress() === 1) {
+        tl.current.restart();
+      } else {
+        tl.current.play();
+      }
     }
   };
 
-  useGSAP(
-    () => {
-      if (!container.current) return;
-
-      const boxes = gsap.utils.toArray(".box") as HTMLElement[];
-
-      if (boxes.length < 3) return; // Ensure we have at least 3 elements
-
-      tl.current = gsap
-        .timeline()
-        .to(boxes[0], { x: 120, rotation: 360 })
-        .to(boxes[1], { x: -120, rotation: -360 }, "<")
-        .to(boxes[2], { y: -166 })
-        .reverse();
-    },
-    { scope: container }
-  );
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (tl.current) {
+      const value = parseFloat(e.target.value);
+      tl.current.progress(value).pause();
+      setProgress(value);
+    }
+  };
 
   return (
-    <main>
-    <section className="max-h-screen flex flex-col items-center justify-center" ref={container}>
-                <h2>Use the button to toggle a Timeline</h2>
-        <div>
-          <button onClick={toggleTimeline} className="p-2 bg-blue-500 text-white rounded">
-            Toggle Timeline
-          </button>
+    <main className="flex flex-col items-center gap-4 p-6">
+      <div className="flex flex-wrap gap-6">
+        <div className="cell">
+          <h2>SVG &lt;rect&gt;</h2>
+          <svg className="container border border-gray-300" width="260" height="200">
+            <rect ref={svgRect} x="20" y="60" width="220" height="80" fill="#91e600" />
+          </svg>
         </div>
-        <div className="box gradient-blue w-20 h-20 bg-blue-500 text-white flex items-center justify-center mt-4">
-          Box 1
+
+        <div className="cell">
+          <h2>&lt;div&gt;</h2>
+          <div className="container border border-gray-300 w-[260px] h-[200px] relative flex items-center justify-center">
+            <div ref={divRect} className="w-[220px] h-[80px] bg-green-500" />
+          </div>
         </div>
-        <div className="box gradient-blue w-20 h-20 bg-blue-500 text-white flex items-center justify-center mt-4">
-          Box 2
-        </div>
-        <div className="box gradient-blue w-20 h-20 bg-blue-500 text-white flex items-center justify-center mt-4">
-          Box 3
-        </div>
-      </section>
+      </div>
+
+      <h3 ref={messageRef} className="text-lg font-semibold text-gray-700"></h3>
+
+      <div className="flex flex-col items-center gap-3">
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.001"
+          value={progress}
+          onChange={handleSliderChange}
+          className="w-[300px] cursor-pointer"
+        />
+
+        <button
+          onClick={handlePlay}
+          className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition"
+        >
+          Play Animation
+        </button>
+      </div>
     </main>
   );
 }

@@ -1,10 +1,10 @@
-import Hero from "@/components/hero";
+import STUNServerVisualization from "@/components/stun";
 
 export default function Home() {
   return (
     <div>
       <div>
-      <Hero />
+      <STUNServerVisualization />
       </div>
     </div>
   );
