@@ -1,68 +1,57 @@
 "use client";
-import { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
-import { Button } from "@/components/ui/button";
+import { useGSAP } from "@gsap/react";
 
+gsap.registerPlugin(); // ❌ No need to register `useGSAP`, it's a React hook.
 
-const AnimatedSVG = () => {
-  const svgRef = useRef(null);
+export default function Boxes() {
+  const container = useRef<HTMLDivElement | null>(null);
+  const tl = useRef<gsap.core.Timeline | null>(null);
 
-  useEffect(() => {
-    gsap.to(svgRef.current, {
-      duration: 2,
-      x: 100,
-      xPercent: -100,
-      attr: {
-        fill: "#8d3dae",
-        rx: 50,
-      },
-    });
-  }, []);
-
-  return (
-    <svg width="200" height="100" viewBox="0 0 100 50">
-      <rect ref={svgRef} className="svgBox" width="50" height="50" fill="red" rx="5" />
-    </svg>
-  );
-};
-
-export default function Hero() {
-  const heroRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (heroRef.current) {
-      const tl = gsap.timeline({ delay: 0.2 });
-
-      tl.from(heroRef.current.querySelector("h1"), {
-        opacity: 0,
-        y: 50,
-        scale: 0.95,
-        duration: 1,
-        ease: "power3.out",
-      })
-        .from(heroRef.current.querySelector("p"), {
-          opacity: 0,
-          y: 20,
-          duration: 1,
-          ease: "power3.out",
-        }, "-=0.5")
-        .from(heroRef.current.querySelector("button"), {
-          opacity: 0,
-          scale: 0.8,
-          duration: 0.5,
-          ease: "back.out(1.7)",
-        }, "-=0.5");
+  const toggleTimeline = () => {
+    if (tl.current) {
+      tl.current.reversed(!tl.current.reversed());
     }
-  }, []);
+  };
+
+  useGSAP(
+    () => {
+      if (!container.current) return;
+
+      const boxes = gsap.utils.toArray(".box") as HTMLElement[];
+
+      if (boxes.length < 3) return; // Ensure we have at least 3 elements
+
+      tl.current = gsap
+        .timeline()
+        .to(boxes[0], { x: 120, rotation: 360 })
+        .to(boxes[1], { x: -120, rotation: -360 }, "<")
+        .to(boxes[2], { y: -166 })
+        .reverse();
+    },
+    { scope: container }
+  );
 
   return (
-    <section ref={heroRef} className="h-screen flex flex-col items-center justify-center text-center px-6">
-      <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900">Build. Deploy. Scale.</h1>
-      <p className="mt-4 text-lg text-gray-600 max-w-lg">
-        The fastest way to document and share your software package with the world.
-      </p>
-      <AnimatedSVG/>
-      <Button className="mt-6 px-6 py-3 text-lg">Get Started</Button>
-    </section>
+    <main>
+    <section className="max-h-screen flex flex-col items-center justify-center" ref={container}>
+                <h2>Use the button to toggle a Timeline</h2>
+        <div>
+          <button onClick={toggleTimeline} className="p-2 bg-blue-500 text-white rounded">
+            Toggle Timeline
+          </button>
+        </div>
+        <div className="box gradient-blue w-20 h-20 bg-blue-500 text-white flex items-center justify-center mt-4">
+          Box 1
+        </div>
+        <div className="box gradient-blue w-20 h-20 bg-blue-500 text-white flex items-center justify-center mt-4">
+          Box 2
+        </div>
+        <div className="box gradient-blue w-20 h-20 bg-blue-500 text-white flex items-center justify-center mt-4">
+          Box 3
+        </div>
+      </section>
+    </main>
   );
 }
